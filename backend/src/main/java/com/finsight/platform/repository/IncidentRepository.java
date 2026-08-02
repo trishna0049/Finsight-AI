@@ -22,24 +22,24 @@ public interface IncidentRepository extends JpaRepository<Incident, Long>, JpaSp
     @Query("select avg(extract(epoch from (i.resolvedAt - i.createdAt)) / 60.0) from Incident i where i.resolvedAt is not null")
     Double findAverageMttrMinutes();
 
-        @Query(value = """
+    @Query(value = """
             select cast(i.created_at as date) as incident_date, count(*) as total
             from incidents i
             where i.created_at >= now() - interval '14 days'
             group by cast(i.created_at as date)
             order by incident_date
             """, nativeQuery = true)
-        java.util.List<Object[]> findIncidentTrendLast14Days();
+    java.util.List<Object[]> findIncidentTrendLast14Days();
 
-        @Query(value = """
+    @Query(value = """
             select i.severity, count(*) as total
             from incidents i
             group by i.severity
             order by total desc
             """, nativeQuery = true)
-        java.util.List<Object[]> findSeverityDistribution();
+    java.util.List<Object[]> findSeverityDistribution();
 
-        @Query(value = """
+    @Query(value = """
             select s.name as service_name, count(i.id) as failures
             from incidents i
             join services s on s.id = i.service_id
@@ -47,17 +47,28 @@ public interface IncidentRepository extends JpaRepository<Incident, Long>, JpaSp
             order by failures desc
             limit 8
             """, nativeQuery = true)
-        java.util.List<Object[]> findTopFailingServices();
+    java.util.List<Object[]> findTopFailingServices();
 
-        @Query(value = """
+    @Query(value = """
             select extract(dow from il.timestamp) as day_of_week,
-               extract(hour from il.timestamp) as hour_of_day,
-               count(*) as total
+                   extract(hour from il.timestamp) as hour_of_day,
+                   count(*) as total
             from incident_logs il
             where il.timestamp >= now() - interval '14 days'
             group by day_of_week, hour_of_day
             order by day_of_week, hour_of_day
             """, nativeQuery = true)
-        java.util.List<Object[]> findIncidentHeatmapLast14Days();
+    java.util.List<Object[]> findIncidentHeatmapLast14Days();
+
+    @Query(value = """
+            select cast(i.created_at as date) as incident_date,
+                   count(*) as breach_count
+            from incidents i
+            where i.created_at >= now() - interval '14 days'
+              and i.response_time_ms > 1500
+            group by cast(i.created_at as date)
+            order by incident_date
+            """, nativeQuery = true)
+    java.util.List<Object[]> findSlaBreachTrendLast14Days();
 }
 

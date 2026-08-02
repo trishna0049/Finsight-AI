@@ -79,6 +79,36 @@ export function AnalyticsPage(): JSX.Element {
         </article>
 
         <article className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <h2 className="mb-3 text-lg font-medium">SLA Breach Trend (Response &gt; 1500ms)</h2>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data?.slaBreachTrend ?? []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                <XAxis dataKey="label" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip />
+                <Bar dataKey="value" fill="#ff7a59" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+
+        <article className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <h2 className="mb-3 text-lg font-medium">Service Availability Trend (14 points)</h2>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data?.serviceAvailabilityTrend ?? []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                <XAxis dataKey="label" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" domain={[95, 100]} />
+                <Tooltip />
+                <Line type="monotone" dataKey="value" stroke="#58d68d" strokeWidth={3} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+
+        <article className="rounded-xl border border-white/10 bg-white/5 p-4">
           <h2 className="mb-3 text-lg font-medium">Severity Distribution</h2>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">

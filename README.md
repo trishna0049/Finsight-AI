@@ -24,6 +24,16 @@ Implemented backend-first vertical slices and frontend integration:
 - Incident assignment and timeline comment workflows integrated in frontend
 - Analyst assignee directory API for operational triage
 - Route-level lazy loading with code splitting to reduce initial bundle size
+- Advanced incident/log filtering, sorting, and pagination controls in frontend
+- Analytics expansion with SLA breach and service availability trends
+- Backend controller integration test coverage for analyst endpoints
+- Incident status transition controls and unified timeline view in frontend
+- Production deployment workflow for GHCR image publishing
+- Production compose manifest for image-based deployments
+- Controller integration tests expanded for auth and simulation endpoints
+- Environment-based rollout workflow for staging/production over SSH
+- Prometheus and Grafana observability stack for local and production compose
+- Rollout health verification gate using backend readiness endpoint
 
 ### Monorepo Apps
 
@@ -48,9 +58,9 @@ Implemented backend-first vertical slices and frontend integration:
 
 ## Next Planned Phase
 
-- Expand analytics with SLA breach trends and service availability timeline
-- Add frontend advanced filters and pagination controls for incidents/logs
-- Add controller integration tests and CI test gates
+- Add E2E smoke tests for critical analyst journeys
+- Add centralized log aggregation (Loki/Promtail) with incident correlation labels
+- Add canary rollout and rollback automation in deployment workflow
 
 ## Local Run (Phase 1)
 
@@ -89,6 +99,69 @@ You need to configure these values manually before full end-to-end execution:
 4. Optional provider change:
    - Set AI_PROVIDER and OPENAI_MODEL in .env if you want a different model/provider configuration
 
+5. Grafana local/admin credentials:
+   - Set GRAFANA_ADMIN_USER and GRAFANA_ADMIN_PASSWORD in .env/.env.prod
+   - Replace defaults before internet-exposed deployments
+
+6. GitHub repository secrets (for CI/CD and deployments):
+   - APP_JWT_SECRET
+   - OPENAI_API_KEY (required only when running live AI analysis in deployed environments)
+
+7. Production deployment variables:
+   - Create a .env file from .env.prod.example when using docker-compose.prod.yml
+   - Set REPO_OWNER to your GitHub username/org and IMAGE_TAG to a published tag
+   - APP_JWT_SECRET must be explicitly set in production (no default fallback)
+
+8. GitHub package permissions:
+   - Deploy workflow pushes to GHCR using GITHUB_TOKEN
+   - Ensure Actions has permission to write packages in repository settings
+
+9. Rollout workflow secrets (required for .github/workflows/rollout.yml):
+   - DEPLOY_HOST
+   - DEPLOY_USER
+   - DEPLOY_SSH_KEY
+   - DEPLOY_PATH
+   - GHCR_PAT
+   - POSTGRES_PASSWORD
+   - APP_JWT_SECRET
+   - OPENAI_API_KEY
+
+10. Rollout workflow environment variables (set per GitHub Environment):
+   - POSTGRES_DB (optional, default finsight)
+   - POSTGRES_USER (optional, default finsight)
+   - AI_PROVIDER (optional, default openai)
+   - OPENAI_MODEL (optional, default gpt-4o-mini)
+   - GRAFANA_ADMIN_USER (optional, default admin)
+   - GRAFANA_ADMIN_PASSWORD (optional, default admin)
+
+11. Rollout host prerequisites:
+   - curl must be installed on target host for readiness verification step
+
 ## Architecture Documentation
 
 See docs/architecture.md
+
+## Observability Documentation
+
+See docs/observability.md
+
+## Deployment (Images)
+
+1. Publish images via GitHub Actions:
+   - Run workflow: .github/workflows/deploy.yml
+   - Or push tag: git tag v1.0.0 && git push origin v1.0.0
+
+2. Deploy with production compose:
+   - cp .env.prod.example .env
+   - Edit .env values
+   - docker compose -f docker-compose.prod.yml up -d
+
+## Deployment (Environment Rollout)
+
+1. Configure GitHub Environments:
+   - Create environments named staging and production
+   - Add the required secrets/variables listed above in each environment
+
+2. Run rollout workflow:
+   - Trigger .github/workflows/rollout.yml
+   - Choose target_environment and image_tag

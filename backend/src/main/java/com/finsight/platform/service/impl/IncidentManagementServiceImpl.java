@@ -28,6 +28,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -45,7 +47,7 @@ public class IncidentManagementServiceImpl implements IncidentManagementService 
             CommentRepository commentRepository,
             UserRepository userRepository,
             DashboardService dashboardService,
-                AuditService auditService
+            AuditService auditService
     ) {
         this.incidentRepository = incidentRepository;
         this.commentRepository = commentRepository;
@@ -175,6 +177,50 @@ public class IncidentManagementServiceImpl implements IncidentManagementService 
                 ))
                 .toList();
 
+            List<com.finsight.platform.dto.response.TimelineEventResponse> timeline = new ArrayList<>();
+            timeline.add(new com.finsight.platform.dto.response.TimelineEventResponse(
+                incident.getCreatedAt(),
+                "INCIDENT_CREATED",
+                "Incident created",
+                null
+            ));
+
+            if (incident.getAssignedTo() != null) {
+                timeline.add(new com.finsight.platform.dto.response.TimelineEventResponse(
+                    incident.getUpdatedAt(),
+                    "INCIDENT_ASSIGNED",
+                    "Assigned to " + incident.getAssignedTo().getUsername(),
+                    incident.getAssignedTo().getUsername()
+                ));
+            }
+
+            if (incident.getStatus() != com.finsight.platform.domain.enums.IncidentStatus.OPEN) {
+                timeline.add(new com.finsight.platform.dto.response.TimelineEventResponse(
+                    incident.getUpdatedAt(),
+                    "STATUS_UPDATED",
+                    "Status changed to " + incident.getStatus().name(),
+                    null
+                ));
+            }
+
+            if (incident.getResolvedAt() != null) {
+                timeline.add(new com.finsight.platform.dto.response.TimelineEventResponse(
+                    incident.getResolvedAt(),
+                    "INCIDENT_RESOLVED",
+                    incident.getResolution() != null ? incident.getResolution() : "Incident resolved",
+                    null
+                ));
+            }
+
+            comments.forEach(comment -> timeline.add(new com.finsight.platform.dto.response.TimelineEventResponse(
+                comment.createdAt(),
+                "COMMENT_ADDED",
+                comment.content(),
+                comment.author()
+            )));
+
+            timeline.sort(Comparator.comparing(com.finsight.platform.dto.response.TimelineEventResponse::timestamp));
+
         return new IncidentDetailsResponse(
                 incident.getId(),
                 incident.getIncidentKey(),
@@ -196,7 +242,8 @@ public class IncidentManagementServiceImpl implements IncidentManagementService 
                 incident.getCreatedAt(),
                 incident.getUpdatedAt(),
                 incident.getResolvedAt(),
-                comments
+                comments,
+                timeline
         );
     }
 

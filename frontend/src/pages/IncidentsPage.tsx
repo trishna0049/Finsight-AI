@@ -6,7 +6,8 @@ import {
   fetchAssignees,
   fetchIncidentDetails,
   fetchIncidents,
-  resolveIncident
+  resolveIncident,
+  updateIncidentStatus
 } from "@/services/analystApi";
 
 export function IncidentsPage(): JSX.Element {
@@ -21,6 +22,7 @@ export function IncidentsPage(): JSX.Element {
   const [resolution, setResolution] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
   const [assigneeId, setAssigneeId] = useState<number | "">("");
+  const [nextStatus, setNextStatus] = useState("");
   const queryClient = useQueryClient();
 
   const incidentsQuery = useQuery({
@@ -75,6 +77,18 @@ export function IncidentsPage(): JSX.Element {
     onSuccess: async () => {
       setCommentDraft("");
       await queryClient.invalidateQueries({ queryKey: ["incident", selectedId] });
+    }
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) => updateIncidentStatus(id, status),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["incidents"] }),
+        queryClient.invalidateQueries({ queryKey: ["incident", selectedId] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
+      ]);
+      setNextStatus("");
     }
   });
 
@@ -239,6 +253,34 @@ export function IncidentsPage(): JSX.Element {
               <p className="text-xs text-slate-400">AI Summary: {selectedIncident.data.aiSummary ?? "N/A"}</p>
 
               <div className="space-y-2 rounded-lg border border-white/10 bg-slate-900/60 p-3">
+                <p className="text-sm font-medium">Status Transition</p>
+                <select
+                  className="w-full rounded-md border border-white/10 bg-slate-900 px-2 py-2 text-sm"
+                  value={nextStatus}
+                  onChange={(event) => setNextStatus(event.target.value)}
+                >
+                  <option value="">Select next status</option>
+                  <option value="OPEN">OPEN</option>
+                  <option value="INVESTIGATING">INVESTIGATING</option>
+                  <option value="RESOLVED">RESOLVED</option>
+                  <option value="CLOSED">CLOSED</option>
+                </select>
+                <button
+                  type="button"
+                  className="rounded-lg bg-slate-700 px-3 py-2 text-sm font-semibold disabled:opacity-50"
+                  disabled={!nextStatus || statusMutation.isPending}
+                  onClick={() => {
+                    if (!selectedIncident.data || !nextStatus) {
+                      return;
+                    }
+                    statusMutation.mutate({ id: selectedIncident.data.id, status: nextStatus });
+                  }}
+                >
+                  {statusMutation.isPending ? "Updating..." : "Update Status"}
+                </button>
+              </div>
+
+              <div className="space-y-2 rounded-lg border border-white/10 bg-slate-900/60 p-3">
                 <p className="text-sm font-medium">Assignment</p>
                 <select
                   className="w-full rounded-md border border-white/10 bg-slate-900 px-2 py-2 text-sm"
@@ -310,13 +352,16 @@ export function IncidentsPage(): JSX.Element {
                 </button>
               </div>
 
-              {selectedIncident.data.comments.length > 0 ? (
+              {selectedIncident.data.timeline.length > 0 ? (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Timeline Comments</p>
-                  {selectedIncident.data.comments.slice(-5).map((comment) => (
-                    <article key={comment.id} className="rounded-md border border-white/10 bg-slate-900 p-2 text-xs">
-                      <p className="text-slate-200">{comment.content}</p>
-                      <p className="mt-1 text-slate-500">{comment.author}</p>
+                  <p className="text-sm font-medium">Incident Timeline</p>
+                  {selectedIncident.data.timeline.slice(-8).map((event, index) => (
+                    <article key={`${event.timestamp}-${event.eventType}-${index}`} className="rounded-md border border-white/10 bg-slate-900 p-2 text-xs">
+                      <p className="text-slate-200">{event.message}</p>
+                      <p className="mt-1 text-slate-500">
+                        {new Date(event.timestamp).toLocaleString()} | {event.eventType}
+                        {event.actor ? ` | ${event.actor}` : ""}
+                      </p>
                     </article>
                   ))}
                 </div>

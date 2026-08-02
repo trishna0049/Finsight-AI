@@ -1,0 +1,96 @@
+name: FinSight AI Rollout
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Deployment target"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: "Image tag to deploy (must already exist in GHCR)"
+        required: true
+        default: "latest"
+
+permissions:
+  contents: read
+
+jobs:
+  rollout:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.target_environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare deployment environment file
+        run: |
+          cat > .env <<EOF
+          REPO_OWNER=${{ github.repository_owner }}
+          IMAGE_TAG=${{ github.event.inputs.image_tag }}
+          POSTGRES_DB=${{ vars.POSTGRES_DB || 'finsight' }}
+          POSTGRES_USER=${{ vars.POSTGRES_USER || 'finsight' }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          APP_JWT_SECRET=${{ secrets.APP_JWT_SECRET }}
+          AI_PROVIDER=${{ vars.AI_PROVIDER || 'openai' }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL=${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
+          GRAFANA_ADMIN_USER=${{ vars.GRAFANA_ADMIN_USER || 'admin' }}
+          GRAFANA_ADMIN_PASSWORD=${{ vars.GRAFANA_ADMIN_PASSWORD || 'admin' }}
+          EOF
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            mkdir -p ${{ secrets.DEPLOY_PATH }}
+            cd ${{ secrets.DEPLOY_PATH }}
+            if [ ! -d .git ]; then
+              git clone https://github.com/${{ github.repository }} .
+            else
+              git fetch --all
+            fi
+            git checkout ${{ github.ref_name }} || git checkout main
+            git pull --rebase origin ${{ github.ref_name }} || git pull --rebase origin main
+
+      - name: Upload runtime env
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: ".env"
+          target: ${{ secrets.DEPLOY_PATH }}
+
+      - name: Rollout containers
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_PAT }}
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            for i in $(seq 1 15); do
+              if curl -fsS http://localhost:8080/actuator/health/readiness >/dev/null; then
+                echo "Backend readiness check passed"
+                break
+              fi
+              if [ "$i" -eq 15 ]; then
+                echo "Backend readiness check failed after rollout"
+                docker compose -f docker-compose.prod.yml ps
+                docker compose -f docker-compose.prod.yml logs --tail=150 backend
+                exit 1
+              fi
+              sleep 8
+            done
+            docker image prune -f

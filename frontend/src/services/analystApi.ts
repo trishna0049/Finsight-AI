@@ -56,6 +56,10 @@ export async function addIncidentComment(incidentId: number, content: string): P
   await httpClient.post(`/analyst/incidents/${incidentId}/comments`, { content });
 }
 
+export async function updateIncidentStatus(incidentId: number, status: string): Promise<void> {
+  await httpClient.patch(`/analyst/incidents/${incidentId}/status`, { status });
+}
+
 export async function resolveIncident(incidentId: number, resolution: string): Promise<void> {
   await httpClient.patch(`/analyst/incidents/${incidentId}/resolve`, { resolution });
 }

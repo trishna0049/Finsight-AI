@@ -72,6 +72,13 @@ export interface IncidentComment {
   createdAt: string;
 }
 
+export interface TimelineEvent {
+  timestamp: string;
+  eventType: string;
+  message: string;
+  actor: string | null;
+}
+
 export interface Assignee {
   id: number;
   username: string;
@@ -92,6 +99,7 @@ export interface IncidentDetails extends IncidentSummary {
   resolution: string | null;
   resolvedAt: string | null;
   comments: IncidentComment[];
+  timeline: TimelineEvent[];
 }
 
 export interface PageResponse<T> {
@@ -125,6 +133,8 @@ export interface HeatmapPoint {
 
 export interface AnalyticsOverview {
   incidentTrend: TrendPoint[];
+  slaBreachTrend: TrendPoint[];
+  serviceAvailabilityTrend: { label: string; value: number }[];
   severityDistribution: SeverityDistribution[];
   topFailingServices: ServiceFailure[];
   incidentHeatmap: HeatmapPoint[];

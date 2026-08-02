@@ -24,6 +24,7 @@ public record IncidentDetailsResponse(
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
         OffsetDateTime resolvedAt,
-        List<IncidentCommentResponse> comments
+        List<IncidentCommentResponse> comments,
+        List<TimelineEventResponse> timeline
 ) {
 }
