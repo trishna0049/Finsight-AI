@@ -57,6 +57,7 @@ public class IncidentManagementServiceImpl implements IncidentManagementService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<IncidentSummaryResponse> list(String status, String severity, String service, int page, int size, String sortBy, String direction) {
         Sort sort = Sort.by("desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC, normalizeSort(sortBy));
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -77,6 +78,7 @@ public class IncidentManagementServiceImpl implements IncidentManagementService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public IncidentDetailsResponse getById(Long incidentId) {
         Incident incident = getIncident(incidentId);
         return toDetails(incident);

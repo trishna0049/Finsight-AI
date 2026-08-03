@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class LogExplorerServiceImpl implements LogExplorerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<LogEntryResponse> search(String serviceName, String level, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size);
         var allLogs = incidentLogRepository.findAll();
