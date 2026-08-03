@@ -12,6 +12,7 @@ import com.finsight.platform.service.impl.model.AiAnalysisRequest;
 import com.finsight.platform.service.impl.model.AiAnalysisResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 
 @Service
 public class IncidentProcessingServiceImpl implements IncidentProcessingService {
@@ -60,7 +61,7 @@ public class IncidentProcessingServiceImpl implements IncidentProcessingService 
                 incident.getService().getName(),
                 incident.getAffectedUsers(),
                 incident.getResponseTimeMs(),
-                incident.getErrorFrequency(),
+                incident.getErrorFrequency().doubleValue(),
                 logs
         );
 
@@ -69,7 +70,7 @@ public class IncidentProcessingServiceImpl implements IncidentProcessingService 
         incident.setAiSummary(result.executiveSummary());
         incident.setRootCause(result.rootCause());
         incident.setBusinessImpact(result.businessImpact());
-        incident.setConfidenceScore(result.confidenceScore());
+        incident.setConfidenceScore(BigDecimal.valueOf(result.confidenceScore()));
         incident.setSuggestedResolution(result.suggestedResolution());
         incident.setSeverity(severityEngineService.classify(incident));
         incident.setStatus(IncidentStatus.INVESTIGATING);

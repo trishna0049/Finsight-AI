@@ -6,6 +6,7 @@ import com.finsight.platform.domain.enums.IncidentSeverity;
 import com.finsight.platform.service.impl.SeverityEngineServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import java.math.BigDecimal;
 
 class SeverityEngineServiceImplTest {
 
@@ -20,7 +21,7 @@ class SeverityEngineServiceImplTest {
         incident.setService(monitoredService);
         incident.setAffectedUsers(4000);
         incident.setResponseTimeMs(3000);
-        incident.setErrorFrequency(100.0);
+        incident.setErrorFrequency(BigDecimal.valueOf(100.0));
 
         IncidentSeverity severity = service.classify(incident);
         Assertions.assertEquals(IncidentSeverity.CRITICAL, severity);
@@ -35,7 +36,7 @@ class SeverityEngineServiceImplTest {
         incident.setService(monitoredService);
         incident.setAffectedUsers(10);
         incident.setResponseTimeMs(80);
-        incident.setErrorFrequency(1.0);
+        incident.setErrorFrequency(BigDecimal.valueOf(1.0));
 
         IncidentSeverity severity = service.classify(incident);
         Assertions.assertEquals(IncidentSeverity.LOW, severity);

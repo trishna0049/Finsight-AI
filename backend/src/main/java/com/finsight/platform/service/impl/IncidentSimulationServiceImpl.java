@@ -82,7 +82,7 @@ public class IncidentSimulationServiceImpl implements IncidentSimulationService 
         incident.setSeverity(IncidentSeverity.MEDIUM);
         incident.setAffectedUsers(1200);
         incident.setResponseTimeMs(2600);
-        incident.setErrorFrequency(64.5);
+        incident.setErrorFrequency(BigDecimal.valueOf(64.5));
         incident = incidentRepository.save(incident);
 
         List<IncidentLog> logs = List.of(

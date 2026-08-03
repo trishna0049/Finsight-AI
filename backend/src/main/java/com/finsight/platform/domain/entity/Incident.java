@@ -5,7 +5,7 @@ import com.finsight.platform.domain.enums.IncidentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Getter
@@ -50,7 +50,7 @@ public class Incident {
     private Integer responseTimeMs = 0;
 
     @Column(nullable = false, precision = 8, scale = 2)
-    private Double errorFrequency = 0d;
+   private BigDecimal errorFrequency = BigDecimal.ZERO;
 
     @Column(columnDefinition = "TEXT")
     private String rootCause;
@@ -64,8 +64,8 @@ public class Incident {
     @Column(columnDefinition = "TEXT")
     private String suggestedResolution;
 
-    @Column(nullable = false)
-    private Double confidenceScore = 0d;
+    @Column(nullable = false, precision = 6, scale = 4)
+    private BigDecimal confidenceScore = BigDecimal.ZERO;
 
     @Column(columnDefinition = "TEXT")
     private String resolution;

@@ -5,6 +5,8 @@ import com.finsight.platform.domain.enums.IncidentSeverity;
 import com.finsight.platform.service.SeverityEngineService;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Service
 public class SeverityEngineServiceImpl implements SeverityEngineService {
 
@@ -24,9 +26,9 @@ public class SeverityEngineServiceImpl implements SeverityEngineService {
             score += 15;
         }
 
-        if (incident.getErrorFrequency() >= 80) {
+        if (incident.getErrorFrequency().compareTo(BigDecimal.valueOf(80)) >= 0) {
             score += 30;
-        } else if (incident.getErrorFrequency() >= 30) {
+        } else if (incident.getErrorFrequency().compareTo(BigDecimal.valueOf(30)) >= 0) {
             score += 15;
         }
 

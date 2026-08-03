@@ -1,5 +1,5 @@
 package com.finsight.platform.dto.response;
-
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -14,12 +14,12 @@ public record IncidentDetailsResponse(
         String assignedTo,
         Integer affectedUsers,
         Integer responseTimeMs,
-        Double errorFrequency,
+        BigDecimal errorFrequency,
         String rootCause,
         String aiSummary,
         String businessImpact,
         String suggestedResolution,
-        Double confidenceScore,
+        BigDecimal confidenceScore,
         String resolution,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
