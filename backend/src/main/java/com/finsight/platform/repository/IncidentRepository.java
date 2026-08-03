@@ -19,7 +19,7 @@ public interface IncidentRepository extends JpaRepository<Incident, Long>, JpaSp
     @Query("select avg(i.responseTimeMs) from Incident i")
     Double findAverageResponseTimeMs();
 
-    @Query("select avg(extract(epoch from (i.resolvedAt - i.createdAt)) / 60.0) from Incident i where i.resolvedAt is not null")
+    @Query(value = "select avg(extract(epoch from (resolved_at - created_at)) / 60.0) from incidents where resolved_at is not null", nativeQuery = true)
     Double findAverageMttrMinutes();
 
     @Query(value = """
