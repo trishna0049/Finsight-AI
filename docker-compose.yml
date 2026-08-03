@@ -81,7 +81,7 @@ services:
       - backend
       - ai-service
     ports:
-      - "5173:80"
+      - "5175:80"
 
   prometheus:
     image: prom/prometheus:v2.54.1
