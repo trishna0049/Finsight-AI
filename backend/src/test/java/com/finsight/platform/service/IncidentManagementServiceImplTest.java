@@ -2,7 +2,6 @@ package com.finsight.platform.service;
 
 import com.finsight.platform.domain.entity.Incident;
 import com.finsight.platform.domain.entity.MonitoredService;
-import com.finsight.platform.domain.entity.User;
 import com.finsight.platform.domain.enums.IncidentStatus;
 import com.finsight.platform.dto.request.IncidentResolveRequest;
 import com.finsight.platform.repository.CommentRepository;
@@ -53,13 +52,8 @@ class IncidentManagementServiceImplTest {
         incident.setService(monitoredService);
         incident.setStatus(IncidentStatus.INVESTIGATING);
 
-        User actor = new User();
-        actor.setUsername("incident.analyst");
-
         when(incidentRepository.findById(101L)).thenReturn(Optional.of(incident));
         when(incidentRepository.save(any(Incident.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userRepository.findByUsername("incident.analyst")).thenReturn(Optional.of(actor));
-        when(commentRepository.findByIncidentIdOrderByCreatedAtAsc(101L)).thenReturn(java.util.List.of());
 
         var result = service.resolve(101L, new IncidentResolveRequest("Mitigated through failover"), "incident.analyst");
 

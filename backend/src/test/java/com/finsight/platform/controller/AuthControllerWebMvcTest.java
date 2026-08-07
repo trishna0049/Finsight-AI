@@ -2,6 +2,8 @@ package com.finsight.platform.controller;
 
 import com.finsight.platform.dto.response.AuthTokensResponse;
 import com.finsight.platform.dto.response.UserProfileResponse;
+import com.finsight.platform.security.JwtService;
+import com.finsight.platform.security.PlatformUserDetailsService;
 import com.finsight.platform.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,12 @@ class AuthControllerWebMvcTest {
 
     @MockBean
     private AuthService authService;
+
+        @MockBean
+        private JwtService jwtService;
+
+        @MockBean
+        private PlatformUserDetailsService platformUserDetailsService;
 
     @Test
     void loginShouldReturnAccessAndRefreshTokens() throws Exception {

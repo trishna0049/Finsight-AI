@@ -7,8 +7,23 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  backend-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: finsight
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d finsight"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     defaults:
       run:
@@ -29,4 +44,11 @@ jobs:
         run: mvn clean install -DskipTests
 
       - name: Run tests
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/finsight
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: postgres
+          SPRING_FLYWAY_URL: jdbc:postgresql://localhost:5432/finsight
+          SPRING_FLYWAY_USER: postgres
+          SPRING_FLYWAY_PASSWORD: postgres
         run: mvn test
