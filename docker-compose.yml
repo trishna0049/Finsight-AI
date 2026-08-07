@@ -69,7 +69,6 @@ services:
     container_name: finsight-ai-service
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      AI_PROVIDER: ${AI_PROVIDER:-openai}
     ports:
       - "8001:8001"
 

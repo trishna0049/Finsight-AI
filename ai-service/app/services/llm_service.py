@@ -6,13 +6,9 @@ from app.schemas.analysis import IncidentAnalysisRequest
 
 class LlmService:
     def __init__(self) -> None:
-        self.provider = settings.ai_provider.lower()
         self.client = OpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
 
     def analyze_incident(self, request: IncidentAnalysisRequest) -> dict[str, str | float]:
-        if self.provider != "openai":
-            raise ValueError(f"Unsupported AI provider: {self.provider}")
-
         if not self.client:
             raise ValueError("OPENAI_API_KEY is not configured")
 

@@ -82,7 +82,7 @@ Implemented backend-first vertical slices and frontend integration:
 
 You need to configure these values manually before full end-to-end execution:
 
-1. AI provider key:
+1. OpenAI API key:
    - Set OPENAI_API_KEY in root .env (or ai-service/.env)
    - Without this key, AI analysis endpoint will return an error and incident enrichment will be incomplete
 
@@ -96,8 +96,8 @@ You need to configure these values manually before full end-to-end execution:
    - Python 3.12+ (for ai-service)
    - Node.js 20+ (for frontend)
 
-4. Optional provider change:
-   - Set AI_PROVIDER and OPENAI_MODEL in .env if you want a different model/provider configuration
+4. OpenAI model selection:
+   - Set OPENAI_MODEL in .env if you want to use a different OpenAI model
 
 5. Grafana local/admin credentials:
    - Set GRAFANA_ADMIN_USER and GRAFANA_ADMIN_PASSWORD in .env/.env.prod
@@ -129,7 +129,6 @@ You need to configure these values manually before full end-to-end execution:
 10. Rollout workflow environment variables (set per GitHub Environment):
    - POSTGRES_DB (optional, default finsight)
    - POSTGRES_USER (optional, default finsight)
-   - AI_PROVIDER (optional, default openai)
    - OPENAI_MODEL (optional, default gpt-4o-mini)
    - GRAFANA_ADMIN_USER (optional, default admin)
    - GRAFANA_ADMIN_PASSWORD (optional, default admin)
